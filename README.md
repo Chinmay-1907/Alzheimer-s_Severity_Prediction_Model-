@@ -1,21 +1,22 @@
 # 🧠 Alzheimer's MRI Classification with Augmented Dataset
 
-This project leverages Convolutional Neural Networks (CNNs) to classify MRI scans into four categories based on the **Augmented Alzheimer's MRI Dataset**. The workflow includes preprocessing, data augmentation, model training, and evaluation to achieve accurate predictions.
+This project leverages **Convolutional Neural Networks (CNNs)** to classify MRI brain scans into four stages of Alzheimer's Disease using the **Augmented Alzheimer's MRI Dataset**. The pipeline follows a structured deep learning workflow including EDA, preprocessing, augmentation, CNN modeling, evaluation, and visualization.
 
 ---
 
 ## 📂 Dataset
-- **Source**: [Augmented Alzheimer's MRI Dataset on Kaggle]
+- **Source**: [Augmented Alzheimer's MRI Dataset on Kaggle](https://www.kaggle.com/datasets/uraninjo/augmented-alzheimer-mri-dataset)
 - **Classes**:
   - **Mild Demented**
   - **Moderate Demented**
   - **Non-Demented**
   - **Very Mild Demented**
 - **Structure**:
-  - Training, validation, and test splits created dynamically:
-    - **80%** for Training
-    - **10%** for Validation
-    - **10%** for Testing
+  - Combined both `OriginalDataset` and `AugmentedAlzheimerDataset`
+  - Dynamic splits using `train_test_split` with stratification:
+    - **56%** Training
+    - **14%** Validation
+    - **30%** Testing
 
 ---
 
@@ -26,58 +27,87 @@ This project leverages Convolutional Neural Networks (CNNs) to classify MRI scan
   - NumPy & Pandas
   - Matplotlib & Seaborn
   - Scikit-learn
-- **Platform**: Kaggle Hub
+  - PIL (for EDA image analysis)
+- **Platform**: Kaggle + Local Notebook
 
 ---
 
 ## 🔍 Project Workflow
-1. **Dataset Loading**:
-   - Downloaded and structured the `OriginalDataset` directory.
-   - Utilized TensorFlow's `image_dataset_from_directory` for efficient image loading.
-   
-2. **Data Preprocessing**:
-   - Resized images to **200 x 200 pixels**.
-   - Normalized pixel values to **[0,1]**.
 
-3. **Data Augmentation**:
-   - Applied transformations to improve robustness:
-     - Random rotation
-     - Zoom
-     - Contrast adjustments
-     - Horizontal and vertical flips
+### 1. **Dataset Loading**
+- Used `kagglehub` API to download the full dataset.
+- Constructed a custom DataFrame with image paths and labels from both `OriginalDataset` and `AugmentedAlzheimerDataset`.
+- Verified class distributions and image consistency.
 
-4. **Model Architecture**:
-   - **Sequential CNN** with the following:
-     - **6 Convolutional layers**: Filters range from 32 to 128
-     - **MaxPooling layers**: Reducing spatial dimensions
-     - **Dropout layers**: Preventing overfitting
-     - **Dense layers**: For feature extraction and classification
-   - **Output**: Softmax activation for multi-class classification
+### 2. **Exploratory Data Analysis (EDA)**
+- Visualized sample images per class.
+- Analyzed class imbalance, image size variability, and color modes.
+- Explored brightness distributions and source differences.
 
-5. **Training**:
-   - **Optimizer**: Adam
-   - **Loss Function**: Categorical Crossentropy
-   - **Metrics**: Accuracy
-   - **Epochs**: 85 (Changing #)
+### 3. **Data Preprocessing**
+- Resized all images to **224 x 224**.
+- Applied **MobileNetV2 preprocessing function** for scaling pixel values.
+- Split dataset using stratified `train_test_split`.
 
-6. **Evaluation**:
-   - Analyzed model performance using:
-     - Accuracy
-     - Confusion Matrix
-   - Visualized training vs validation accuracy and loss.
+### 4. **Data Augmentation**
+- Implemented augmentations through `ImageDataGenerator`:
+  - Random rotations
+  - Zooming
+  - Contrast shifts
+  - Horizontal flips
+
+### 5. **Model Architecture**
+- Built a **deep CNN** using `tf.keras.Sequential`:
+  - Multiple `Conv2D` + `BatchNormalization` blocks
+  - `MaxPooling2D` for spatial downsampling
+  - `Dropout` for regularization
+  - `Dense` layers with ReLU for classification
+  - Final **softmax layer** for multi-class output
+
+### 6. **Training Strategy**
+- **Optimizer**: SGD (Stochastic Gradient Descent)
+- **Loss Function**: Categorical Crossentropy
+- **Metrics**: Accuracy
+- **Regularization**: Included **EarlyStopping** with patience=3 and best weight restoration
+- **Epochs**: 30 (with early stopping)
+
+### 7. **Evaluation**
+- Evaluated model on the test set using:
+  - Final test **accuracy and loss**
+  - **Classification report** (precision, recall, F1-score)
+  - **Confusion matrix** heatmap
+- Visualized:
+  - Accuracy & loss curves
+  - Misclassifications via confusion matrix
 
 ---
 
 ## 📊 Results
-- **Test Accuracy**: Achieved Train Accuracy of **82%**
-- **Confusion Matrix**: Highlighted class-specific performance.
+- **Test Accuracy**: Achieved ~**93%** accuracy on the held-out test set.
+- **Classification Report**: Strong precision and recall across all 4 classes.
+- **Confusion Matrix**: Showed robust separation between classes, especially `Non-Demented` and `Moderate Demented`.
 
 ---
 
 ## 🖼 Visualizations
-1. **Data Exploration**:
-   - Displayed sample images with class labels.
-2. **Training Performance**:
-   - Plotted accuracy vs epochs and loss vs epochs.
-3. **Confusion Matrix**:
-   - Illustrated misclassifications and strengths.
+1. **EDA Insights**:
+   - Class distribution bar charts
+   - Image resolution histograms
+   - Brightness & color mode distributions
+2. **Model Training**:
+   - Accuracy and loss vs. epoch plots
+   - EarlyStopping detection
+3. **Performance Analysis**:
+   - Confusion matrix heatmap
+   - Classification report with F1-scores
+
+---
+
+## 🚀 Future Improvements
+- Implement **transfer learning** using MobileNetV2 or VGG19
+- Explore **Grad-CAM** for model explainability
+- Use **Focal Loss** for class imbalance
+- Integrate **hyperparameter tuning** (e.g., Keras Tuner)
+- Explore **ensemble models** for added robustness
+- Prepare model for **deployment via TensorFlow Lite**
+
